@@ -5,9 +5,13 @@ import json
 import argparse
 import sys
 
+# Configuration for pdfkit to use wkhtmltopdf
+path_to_wkhtmltopdf = 'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
+config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+
 def convert_html_to_pdf(html_path, pdf_save_path):
     try:
-        pdfkit.from_file(html_path, pdf_save_path)
+        pdfkit.from_file(html_path, pdf_save_path, configuration=config)
     #It might throw an OSError. But the conversion is complete irrespective.
     except OSError:
         pass
@@ -20,17 +24,21 @@ def main(args):
                         if os.path.isdir(folder)]
     for i, symbol_path in enumerate(symbol_paths):
         #Get symbol name
-        symbol = symbol_path.split('/')[-1]
+        #symbol = symbol_path.split('/')[-1]
+        symbol = symbol_path.split(os.path.sep)[-1] # for Window 
+
         #Get annual_report dates for the symbol. Directories are named by the annual_report date
         ar_dates_symbol_paths = [folder for folder in glob.glob(os.path.join(symbol_path, '*')) \
                                     if os.path.isdir(folder)]
+
         #Iterate over each date and convert the html file to pdf file
         for ar_dates_symbol_path in ar_dates_symbol_paths:
             ar_paths = [file for file in glob.glob(os.path.join(ar_dates_symbol_path, '*')) \
                             if os.path.isfile(file)]
             #ar_paths should be a list of 1 element only i.e the report
             assert len(ar_paths)==1
-            date = ar_dates_symbol_path.split('/')[-1]
+            #date = ar_dates_symbol_path.split('/')[-1]
+            date = ar_dates_symbol_path.split(os.path.sep)[-1] # for Window
             pdf_save_dir = os.path.join(config_dict['annual_reports_pdf_save_directory'], symbol, date)
             pdf_save_path = os.path.join(pdf_save_dir, date+'.pdf')
             #If path exists, then the conversion has already happened before

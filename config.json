@@ -1,8 +1,8 @@
 {
-    "financial_modelling_prep_api_key":"<your own fmp key>",
+    "financial_modelling_prep_api_key":"d0f25272e23403600b5a70990b0c0f18",
     "openai_api_key":"<your own openai key>",
-    "annual_reports_html_save_directory":"<directory where fetched 10-k html files will be saved>",
-    "annual_reports_pdf_save_directory":"<directory where pdf files converted from html files will be saved>",
+    "annual_reports_html_save_directory":"C:\\Users\\napoleon\\Documents\\GitHub\\GPT-InvestAR\\html",
+    "annual_reports_pdf_save_directory":"C:\\Users\\napoleon\\Documents\\GitHub\\GPT-InvestAR\\html_to_pdf",
     "targets_df_path":"<pandas df containing generated target columns saved as pickle file>",
     "targets_train_df_path":"<pandas df of sampled train data saved as pickle file>",
     "targets_test_df_path":"<pandas df of sampled test data saved as pickle file>",

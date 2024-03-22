@@ -36,7 +36,7 @@ def get_all_tickers():
 def main(args):
     with open(args.config_path) as json_file:
         config_dict = json.load(json_file)
-    ticker_list = get_all_tickers()
+    ticker_list = get_all_tickers()[:2] # modified to get only two companies here for testing
     for i, ticker in enumerate(ticker_list):
         check_saved_path = os.path.join(config_dict['annual_reports_html_save_directory'], ticker)
         if os.path.exists(check_saved_path):
@@ -64,8 +64,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', dest='config_path', type=str,
-                        required=True,
-                        help='''Full path of config.json''')
+    # parser.add_argument('--config_path', dest='config_path', type=str,
+    #                     required=True,
+    #                     help='''Full path of config.json''')
+    parser.add_argument('--config_path', type=str, required=True,
+                    help='Full path of config.json')
     main(args=parser.parse_args())
     sys.exit(0)

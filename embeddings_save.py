@@ -6,6 +6,7 @@ import sys
 import argparse
 from llama_index import VectorStoreIndex, SimpleDirectoryReader
 from llama_index import GPTVectorStoreIndex, StorageContext, ServiceContext, LangchainEmbedding
+# pip install llama-index-vector-stores-chroma
 from llama_index.vector_stores import ChromaVectorStore
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 import chromadb
