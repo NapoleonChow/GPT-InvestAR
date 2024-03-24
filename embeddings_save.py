@@ -1,3 +1,8 @@
+"""
+This code is designed for processing and indexing documents, particularly annual reports, into a searchable format using embeddings.
+
+"""
+
 import os
 import json
 import pickle
@@ -17,6 +22,8 @@ TRAIN_CUTOFF_YEAR = 2017
 NUM_SAMPLES_TRAIN = 1000
 NUM_SAMPLES_TEST = 500
 
+# Saves vector indexes for a given set of documents. 
+# It uses ChromaVectorStore for storage and handles the creation and storage of document embeddings.
 def save_index(embeddings_path, embedding_model, symbol, ar_date, config_dict):
     db = chromadb.PersistentClient(path=os.path.join(embeddings_path, symbol, ar_date))
     chroma_collection = db.create_collection("ar_date")
@@ -32,6 +39,8 @@ def save_index(embeddings_path, embedding_model, symbol, ar_date, config_dict):
                 documents, storage_context=storage_context, service_context=service_context
         )
 
+# Iterates over a DataFrame containing document metadata, generates embeddings for each document using the specified model, 
+#    and saves these embeddings in a structured directory format.
 def save_embeddings(df, embedding_model, save_directory, config_dict):
     for i in df.index:
         start_time = time.time()
@@ -45,12 +54,14 @@ def save_embeddings(df, embedding_model, save_directory, config_dict):
                    symbol, ar_date, config_dict)
         print("Completed: {}, {}, {} in {:.2f}s".format(i+1, symbol, ar_date, time.time()-start_time))
 
+# Serializes and saves DataFrames containing training and testing targets using Python's pickle module.
 def save_dfs(df_train, df_test, config_dict):
     with open(config_dict['targets_train_df_path'], 'wb') as handle:
         pickle.dump(df_train, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(config_dict['targets_test_df_path'], 'wb') as handle:
         pickle.dump(df_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+# It loads the configuration, prepares the datasets, generates embeddings, and saves them appropriately.
 def main(args):
     with open(args.config_path) as json_file:
         config_dict = json.load(json_file)
