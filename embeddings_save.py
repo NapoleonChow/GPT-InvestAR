@@ -9,10 +9,13 @@ import pickle
 import time
 import sys
 import argparse
-from llama_index import VectorStoreIndex, SimpleDirectoryReader
-from llama_index import GPTVectorStoreIndex, StorageContext, ServiceContext, LangchainEmbedding
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+# pip install llama-index-embeddings-langchain
+from llama_index.embeddings.langchain import LangchainEmbedding
+from llama_index.core import GPTVectorStoreIndex, StorageContext, ServiceContext
 # pip install llama-index-vector-stores-chroma
-from llama_index.vector_stores import ChromaVectorStore
+from llama_index.vector_stores.chroma import ChromaVectorStore
+# pip install llama-index-embeddings-huggingface
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 import chromadb
 

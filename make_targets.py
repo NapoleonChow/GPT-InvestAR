@@ -8,16 +8,30 @@ import sys
 import argparse
 from datetime import datetime, timedelta
 from scipy import stats
-from openbb_terminal.sdk import openbb
+# from OpenBBTerminal.openbb_terminal.sdk import openbb
+# from openbb_terminal.sdk import openbb
+from openbb import obb
 
+obb.account.login(pat="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3Rva2VuIjoiN2JPdFZFVmNCNFlWU1QyMHlEUGt1YUo4Q1JmQmVHdzVsUEs0VG5HRSIsImV4cCI6MTc0MzAwMTMxOH0.MmTfy4X3KLu3TuenHXH9G78kCgeMVYlC2gjhzqvAP8c")
 def get_ar_dates(symbol, config_dict):
     '''
     Returns: The annual report dates for each symbol.
     '''
+    # Symbol path is C:\Users\napoleon\Documents\GitHub\GPT-InvestAR\html_to_pdf\BCC
     symbol_path = os.path.join(config_dict['annual_reports_pdf_save_directory'], symbol)
+    # folder name is ['2013-03-07', '2014-02-28', '2015-02-25', '2016-02-25', '2017-02-24', '2018-02-26', '2019-02-26', '2020-02-24', '2021-02-22', '2022-02-22', '2023-02-21', '2024-02-20']
     folder_names = [os.path.basename(folder) for folder in glob.glob(os.path.join(symbol_path, '*')) \
                         if os.path.isdir(folder)]
     return sorted(folder_names)
+
+# def main(config_path):
+#     with open(config_path) as json_file:
+#          config_dict = json.load(json_file)
+#     helloWorld = get_ar_dates("BCC", config_dict)
+#     print(helloWorld)
+
+# config_path = "C:\\Users\\napoleon\\Documents\\GitHub\\GPT-InvestAR\\config.json"
+# main(config_path)
 
 def get_pct_returns_defined_date(price_data, start_date, end_date, tolerance_days = 7):
     '''
@@ -116,8 +130,9 @@ def make_targets(symbol, start_date, end_date, price_data_sp500, config_dict):
     Returns:
         Pandas DF containing percentage returns between annual report dates for the symbol
     '''
-    price_data = openbb.stocks.load(symbol, start_date=start_date, end_date=end_date, 
-                                    verbose=False)
+    # price_data = openbb.stocks.load(symbol, start_date=start_date, end_date=end_date, 
+    #                                 verbose=False)
+    price_data = obb.equity.price.historical(symbol=symbol, start_date=start_date, end_date=end_date, provider='fmp')
     ar_dates = get_ar_dates(symbol, config_dict)
     df = pd.DataFrame()
     for i in range(len(ar_dates)-1):
@@ -145,8 +160,9 @@ def make_targets_all_symbols(start_date, end_date, config_dict):
     '''
     symbol_names = [os.path.basename(folder) for folder in glob.glob(os.path.join(config_dict['annual_reports_pdf_save_directory'], '*')) \
                             if os.path.isdir(folder)]
-    price_data_sp500 = openbb.stocks.load('^GSPC', start_date=start_date, end_date=end_date, 
-                                        verbose=False)
+    # price_data_sp500 = openbb.stocks.load('^GSPC', start_date=start_date, end_date=end_date, 
+    #                                     verbose=False)
+    price_data_sp500 = obb.equity.price.historical(symbol="^GSPC", start_date=start_date, end_date=end_date, provider='fmp')
     full_df = pd.DataFrame()
     #Iterate over all symbols in the directory
     for i, symbol in enumerate(symbol_names):
@@ -195,13 +211,17 @@ def main(args):
     targets_df_filtered = targets_df.loc[lambda x: ~(x.isnull().any(axis=1))]
     #Create a column called era which denotes the year of annual report filing
     targets_df_filtered['era'] = targets_df_filtered['report_date'].apply(lambda x: x.year)
+
+    # Avoid ambiguity by resetting index before groupby operation, if not already done. (new)
+    targets_df_filtered.reset_index(drop=True, inplace=True)
+
     #Drop duplicates if they exist. Could be if consecutive annual reports are published in same year.
     targets_df_filtered_dedup = targets_df_filtered.drop_duplicates(subset=['era', 'symbol']).reset_index(drop=True)
     target_cols = [c for c in targets_df_filtered_dedup.columns if c.startswith('target')]
     #Generate normalised target columns
     for target in target_cols:
-        targets_df_filtered_dedup = targets_df_filtered_dedup.groupby('era', group_keys=False).apply(lambda df: \
-                                                                        get_normalized_column(df, target))
+        targets_df_filtered_dedup = targets_df_filtered_dedup.groupby('era', group_keys=False, as_index=False).apply(lambda df: \
+                                                                        get_normalized_column(df, target)).reset_index(drop=True)
     target_cols_normalised = [c for c in targets_df_filtered_dedup.columns if \
                                 (c.startswith('target') & (c.endswith('normalised')))]
     #Create final target column for Machine Learning model building
